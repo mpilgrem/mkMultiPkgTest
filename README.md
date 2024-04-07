@@ -1,9 +1,9 @@
 # mkMultiPkgTest
 
-A Haskell project to create an executable to create a multi-package Stack
+A Haskell project to create an executable to help create a multi-package Stack
 project.
 
-Use as follows (for example):
+Use the executable as follows (for example):
 ~~~text
 mkMultiPkgTest noOpTest 80
 cd noOpTest

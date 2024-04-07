@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Main
@@ -11,26 +12,18 @@ import Path.IO ( createDir, getCurrentDir )
 import System.Environment ( getArgs )
 
 main :: IO ()
-main = do
-  args <- getArgs
-  case args of
-    [] -> putStrLn
-      "No arguments. Two arguments expected: the project name and the number \
-      \of packages."
-    [p, n] -> do
-      let projectRelDir = fromJust $ parseRelDir p
-          n' = read n :: Int
-      wd <- getCurrentDir
-      let projectAbsDir = wd </> projectRelDir
-      createDir projectAbsDir
-      forM_ [1..n'] $ \i -> do
-        let deps = case i of
-              1 -> []
-              _ -> [1..i - 1]
-        mkPackage projectAbsDir i deps
-    _ -> putStrLn
-      "More than two arguments. Two arguments expected: the project name and \
-      \the number of packages."
+main = getArgs >>= \case
+  [] -> putStrLn $ "No arguments. " <> msg
+  [p, n] -> do
+    wd <- getCurrentDir
+    let projectRelDir = fromJust $ parseRelDir p
+        n' = read n :: Int
+        projectAbsDir = wd </> projectRelDir
+    createDir projectAbsDir
+    forM_ [1..n'] $ \i -> mkPackage projectAbsDir i [1..i - 1]
+  _ -> putStrLn $ "More than two arguments. " <> msg
+ where
+  msg = "Two arguments expected: the project name and the number of packages."
 
 mkPackage :: Path Abs Dir -> Int -> [Int] -> IO ()
 mkPackage projectDir n deps = do
@@ -71,15 +64,8 @@ mkPackage projectDir n deps = do
     <> dependencies
     <> "library:\n"
     <> "  source-dirs: src\n"
-
-mkPackageName :: String -> String
-mkPackageName n = "package" <> n
-
-mkDep :: String -> String
-mkDep n = "- " <> mkPackageName n <> "\n"
-
-mkImport :: String -> String
-mkImport n = "import Lib" <> n <> "\n"
-
-mkDepFunc :: String -> String
-mkDepFunc n = "  someFunc" <> n <> "\n"
+ where
+  mkPackageName i = "package" <> i
+  mkDep i = "- " <> mkPackageName i <> "\n"
+  mkImport i = "import Lib" <> i <> "\n"
+  mkDepFunc i = "  someFunc" <> i <> "\n"
